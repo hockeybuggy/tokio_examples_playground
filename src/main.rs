@@ -69,26 +69,15 @@ impl Service for Echo {
     }
 }
 
-struct EchoRev;
-
-impl Service for EchoRev {
-    type Request = String;
-    type Response = String;
-    type Error = io::Error;
-    type Future = BoxFuture<Self::Response, Self::Error>;
-
-    fn call(&self, req: Self::Request) -> Self::Future {
-        let rev: String = req.chars().rev().collect();
-        future::ok(rev).boxed()
-    }
-}
-
 
 use tokio_proto::TcpServer;
 
+
 fn main() {
-    println!("Hello, world!");
-    let addr = "0.0.0.0:12345".parse().unwrap();
+    let raw_addr = "0.0.0.0:2345"; // TODO get from envvar
+    let addr = raw_addr.parse().unwrap();  // TODO better name?
+    println!("Starting up server");
+    println!("Listening on {}", addr);
     let server = TcpServer::new(LineProto, addr);
-    server.serve(|| Ok(EchoRev));
+    server.serve(|| Ok(Echo));
 }
