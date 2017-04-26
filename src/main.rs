@@ -1,24 +1,40 @@
+extern crate bytes;
 extern crate futures;
 extern crate tokio_core;
+extern crate tokio_io;
 extern crate tokio_service;
 extern crate tokio_proto;
 
 use std::io;
 use std::str;
-use tokio_core::io::{Codec, EasyBuf};
+use bytes::BytesMut;
+use tokio_io::codec::{Encoder, Decoder};
 
 pub struct LineCodec;
 
-impl Codec for LineCodec {
-    type In = String;
-    type Out = String;
+impl Encoder for LineCodec {
+    type Item = String;
+    type Error = io::Error;
 
-    fn decode(&mut self, buf: &mut EasyBuf) -> io::Result<Option<Self::In>> {
-        if let Some(i) = buf.as_slice().iter().position(|&b| b == b'\n') {
-            let line = buf.drain_to(i);
-            buf.drain_to(1);
+    fn encode(&mut self, msg: String, buf: &mut BytesMut) -> io::Result<()> {
+        buf.extend(msg.as_bytes());
+        buf.extend(b"\n");
+        Ok(())
+    }
+}
 
-            return match str::from_utf8(&line.as_ref()) {
+impl Decoder for LineCodec {
+    type Item = String;
+    type Error = io::Error;
+
+    fn decode(&mut self, buf: &mut BytesMut) -> io::Result<Option<String>> {
+        if let Some(i) = buf.iter().position(|&b| b == b'\n') {
+            // remove 'serialized frame'
+            let line = buf.split_to(i);
+            // remove trailing new line
+            buf.split_to(1);
+
+            match str::from_utf8(&line.as_ref()) {
                 Ok(s) => Ok(Some(s.to_string())),
                 Err(_) => Err(io::Error::new(io::ErrorKind::Other, "invalid UTF-8")),
             }
@@ -26,21 +42,17 @@ impl Codec for LineCodec {
             Ok(None)
         }
     }
-
-    fn encode(&mut self, msg: String, buf: &mut Vec<u8>) -> io::Result<()> {
-        buf.extend_from_slice(msg.as_bytes());
-        buf.push(b'\n');
-        Ok(())
-    }
 }
 
 
 use tokio_proto::pipeline::ServerProto;
-use tokio_core::io::{Io, Framed};
 
 pub struct LineProto;
 
-impl<T: Io + 'static> ServerProto<T> for LineProto {
+use tokio_io::{AsyncRead, AsyncWrite};
+use tokio_io::codec::Framed;
+
+impl<T:  AsyncRead + AsyncWrite + 'static> ServerProto<T> for LineProto {
     type Request = String;
     type Response = String;
 
