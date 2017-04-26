@@ -52,7 +52,7 @@ pub struct LineProto;
 use tokio_io::{AsyncRead, AsyncWrite};
 use tokio_io::codec::Framed;
 
-impl<T:  AsyncRead + AsyncWrite + 'static> ServerProto<T> for LineProto {
+impl<T: AsyncRead + AsyncWrite + 'static> ServerProto<T> for LineProto {
     type Request = String;
     type Response = String;
 
@@ -87,7 +87,7 @@ use tokio_proto::TcpServer;
 
 fn main() {
     let raw_addr = "0.0.0.0:2345"; // TODO get from envvar
-    let addr = raw_addr.parse().unwrap();  // TODO better name?
+    let addr = raw_addr.parse().unwrap(); // TODO better name?
     println!("Starting up server");
     println!("Listening on {}", addr);
     let server = TcpServer::new(LineProto, addr);
