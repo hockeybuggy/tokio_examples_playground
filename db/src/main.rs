@@ -41,9 +41,8 @@ impl Service for Server {
 
     fn call(&self, req: Request) -> Self::Future {
         assert_eq!(req.path(), "/db");
-        println!("Request!!");
 
-        let random_id = rand::thread_rng().gen_range(0, 4);
+        let random_id = rand::thread_rng().gen_range(1, 5);
         let db = self.db_pool.clone();
         let msg = self.thread_pool.spawn_fn(move || {
             let conn = db.get().map_err(|e| {
@@ -79,6 +78,7 @@ fn main() {
     let db_manager = PostgresConnectionManager::new(db_url, TlsMode::None).unwrap();
     let db_pool = r2d2::Pool::new(db_config, db_manager).unwrap();
 
+    println!("Starting server.\nListening on port 8080...");
     TcpServer::new(tokio_minihttp::Http, addr).serve(move || {
         Ok(Server {
             thread_pool: thread_pool.clone(),
