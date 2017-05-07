@@ -73,7 +73,8 @@ fn main() {
     let addr = "127.0.0.1:8080".parse().unwrap();
     let thread_pool = CpuPool::new(10);
 
-    let db_url = "postgres://postgres@localhost";
+    // let db_url = "postgres://docker@172.17.0.2:5432/docker";
+    let db_url = "postgres://docker:docker@localhost:32768/docker";
     let db_config = r2d2::Config::default();
     let db_manager = PostgresConnectionManager::new(db_url, TlsMode::None).unwrap();
     let db_pool = r2d2::Pool::new(db_config, db_manager).unwrap();
