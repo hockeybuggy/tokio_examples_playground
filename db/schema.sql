@@ -2,11 +2,12 @@
 DROP TABLE world;
 CREATE TABLE world (
     id serial,
-    message text
+    body text
 );
 
-INSERT INTO world (message) VALUES
+INSERT INTO world (body) VALUES
     ('Hello'),
     ('안녕하세요'),
     ('Bonjour'),
-    ('你好');
+    ('好'),
+    ('Здравствуйте');

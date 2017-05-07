@@ -30,7 +30,7 @@ struct Server {
 #[derive(RustcEncodable)]
 struct Message {
     id: i32,
-    randomNumber: i32,
+    body: String,
 }
 
 impl Service for Server {
@@ -43,7 +43,7 @@ impl Service for Server {
         assert_eq!(req.path(), "/db");
         println!("Request!!");
 
-        let random_id = rand::thread_rng().gen_range(0, 10_000);
+        let random_id = rand::thread_rng().gen_range(0, 4);
         let db = self.db_pool.clone();
         let msg = self.thread_pool.spawn_fn(move || {
             let conn = db.get().map_err(|e| {
@@ -56,7 +56,7 @@ impl Service for Server {
 
             Ok(Message {
                 id: row.get("id"),
-                randomNumber: row.get("randomNumber"),
+                body: row.get("body"),
             })
         });
 
