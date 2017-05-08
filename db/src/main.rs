@@ -1,6 +1,4 @@
 #![deny(warnings)]
-#![allow(bad_style)]
-// TODO see if bad style is needed
 
 extern crate futures;
 extern crate futures_cpupool;
@@ -74,6 +72,7 @@ fn main() {
     let thread_pool = CpuPool::new(10);
 
     let db_url = "postgres://docker:docker@localhost:32769/docker";
+    // let db_url= "postgres://postgres@localhost"
     let db_config = r2d2::Config::default();
     let db_manager = PostgresConnectionManager::new(db_url, TlsMode::None).unwrap();
     let db_pool = r2d2::Pool::new(db_config, db_manager).unwrap();
