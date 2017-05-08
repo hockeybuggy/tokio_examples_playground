@@ -1,11 +1,14 @@
 #![deny(warnings)]
+#[macro_use]
+extern crate serde_derive;
 
 extern crate futures;
 extern crate futures_cpupool;
 extern crate r2d2;
 extern crate r2d2_postgres;
 extern crate rand;
-extern crate rustc_serialize;
+extern crate serde;
+extern crate serde_json;
 extern crate tokio_minihttp;
 extern crate tokio_proto;
 extern crate tokio_service;
@@ -25,7 +28,7 @@ struct Server {
     db_pool: r2d2::Pool<r2d2_postgres::PostgresConnectionManager>,
 }
 
-#[derive(RustcEncodable)]
+#[derive(Serialize, Deserialize)]
 struct Message {
     id: i32,
     body: String,
@@ -58,7 +61,8 @@ impl Service for Server {
         });
 
         msg.map(|msg| {
-            let json = rustc_serialize::json::encode(&msg).unwrap();
+            // let json = serde_json::from_str(msg).unwrap();
+            let json = serde_json::to_string(&msg).unwrap();
             let mut response = Response::new();
             response.header("Content-Type", "application/json");
             response.body(&json);
