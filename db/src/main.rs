@@ -7,6 +7,7 @@ extern crate futures_cpupool;
 extern crate r2d2;
 extern crate r2d2_postgres;
 extern crate rand;
+
 extern crate serde;
 extern crate serde_json;
 extern crate tokio_minihttp;
@@ -28,7 +29,7 @@ struct Server {
     db_pool: r2d2::Pool<r2d2_postgres::PostgresConnectionManager>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize)]
 struct Message {
     id: i32,
     body: String,
@@ -41,7 +42,7 @@ impl Service for Server {
     type Future = BoxFuture<Response, io::Error>;
 
     fn call(&self, req: Request) -> Self::Future {
-        assert_eq!(req.path(), "/db");
+        assert_eq!(req.path(), "/");
 
         let random_id = rand::thread_rng().gen_range(1, 5);
         let db = self.db_pool.clone();
@@ -61,7 +62,6 @@ impl Service for Server {
         });
 
         msg.map(|msg| {
-            // let json = serde_json::from_str(msg).unwrap();
             let json = serde_json::to_string(&msg).unwrap();
             let mut response = Response::new();
             response.header("Content-Type", "application/json");
@@ -75,7 +75,7 @@ fn main() {
     let addr = "127.0.0.1:8080".parse().unwrap();
     let thread_pool = CpuPool::new(10);
 
-    let db_url = "postgres://docker:docker@localhost:32769/docker";
+    let db_url = "postgres://docker:docker@localhost:5432/docker";
     // let db_url= "postgres://postgres@localhost"
     let db_config = r2d2::Config::default();
     let db_manager = PostgresConnectionManager::new(db_url, TlsMode::None).unwrap();

@@ -1,11 +1,12 @@
 
-DROP TABLE world;
-CREATE TABLE world (
+DROP TABLE IF EXISTS greetings;
+
+CREATE TABLE greetings (
     id serial,
     body text
 );
 
-INSERT INTO world (body) VALUES
+INSERT INTO greetings (body) VALUES
     ('Hello'),
     ('안녕하세요'),
     ('Bonjour'),
